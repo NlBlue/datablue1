@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Vault</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icon Library (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* HEADER & CONTROLS */
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls { display: flex; gap: 1rem; flex: 1; justify-content: flex-end; }
+
+        .search-box { position: relative; max-width: 300px; width: 100%; }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: var(--border-radius);
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+
+        .search-box i { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .btn-add {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover { background-color: var(--primary-hover); }
+
+        /* GRID LAYOUT */
+        .vault-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* CARD STYLE */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: transform 0.2s;
+            border: 1px solid #e5e7eb;
+        }
+
+        .card:hover { transform: translateY(-4px); border-color: var(--primary); }
+
+        .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+
+        .site-info { display: flex; align-items: center; gap: 0.75rem; }
+
+        .site-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            overflow: hidden;
+        }
+        
+        .site-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+        .site-name { font-weight: 700; font-size: 1.1rem; color: var(--text-main); word-break: break-all; }
+
+        .card-actions { position: relative; }
+
+        .btn-icon {
+            background: none; border: none; color: var(--text-muted);
+            cursor: pointer; font-size: 1.1rem; transition: 0.2s; padding: 0.25rem;
+        }
+
+        .btn-icon:hover { color: var(--danger); }
+
+        /* DATA ROWS */
+        .data-row { margin-bottom: 0.8rem; background: #f9fafb; padding: 0.75rem; border-radius: 8px; }
+
+        .data-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .data-value-group { display: flex; align-items: center; justify-content: space-between; }
+
+        .data-value {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #374151;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 0.5rem;
+        }
+
+        .password-hidden { letter-spacing: 2px; font-family: sans-serif; }
+
+        .btn-copy { font-size: 0.9rem; color: var(--primary); background: none; border: none; cursor: pointer; opacity: 0.7; }
+        .btn-copy:hover { opacity: 1; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; backdrop-filter: blur(2px);
+        }
+
+        .modal {
+            background: white; padding: 2rem; border-radius: var(--border-radius);
+            width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal h2 { margin-bottom: 1.5rem; }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; }
+        .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem; }
+
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+
+        .btn-cancel { background: #e5e7eb; color: #374151; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 500; }
+
+        /* TOAST */
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: #1f2937; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 50px; font-size: 0.9rem; opacity: 0;
+            transition: all 0.3s ease; z-index: 2000;
+            display: flex; align-items: center; gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* EMPTY STATE */
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .error-msg { color: var(--danger); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="brand">
+            <h1><i class="ph ph-lock-key"></i> My Vault</h1>
+        </div>
+        <div class="controls">
+            <div class="search-box">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Cari akun (misal: Google)...">
+            </div>
+            <button class="btn-add" onclick="openModal()">
+                <i class="ph ph-plus-circle"></i> Tambah Login
+            </button>
+        </div>
+    </div>
+
+    <div class="vault-grid" id="vaultContainer">
+        <!-- Cards akan muncul di sini -->
+    </div>
+
+    <!-- MODAL TAMBAH DATA -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h2>Akun Baru</h2>
+            <form id="addForm">
+                <div class="form-group">
+                    <label>Nama Situs / Aplikasi</label>
+                    <input type="text" id="siteName" placeholder="Contoh: Instagram, Netflix" required>
+                </div>
+                <div class="form-group">
+                    <label>Username / Email</label>
+                    <input type="text" id="username" placeholder="email@kamu.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="text" id="password" placeholder="********" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                    <button type="submit" class="btn-add">Simpan ke Server</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIF -->
+    <div class="toast" id="toast">
+        <i class="ph ph-check-circle"></i> <span id="toastMsg">Berhasil disimpan!</span>
+    </div>
+
+    <script>
+        // --- KONFIGURASI SERVER ---
+        // Pastikan server.js jalan di port 3000
+        const API_URL = 'http://localhost:3000/api/vault';
+
+        // DOM Elements
+        const container = document.getElementById('vaultContainer');
+        const modal = document.getElementById('modalOverlay');
+        const searchInput = document.getElementById('searchInput');
+        const form = document.getElementById('addForm');
+        
+        // Penyimpanan data sementara untuk fitur search
+        let allData = [];
+
+        // --- 1. RENDER DATA ---
+        function renderVault(data) {
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="ph ph-safe"></i>
+                        <p>Belum ada data login yang tersimpan.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const iconUrl = `https://www.google.com/s2/favicons?domain=${item.site}&sz=64`;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="site-info">
+                            <div class="site-icon">
+                                <img src="${iconUrl}" onerror="this.style.display='none';this.parentNode.innerHTML='<i class=\'ph ph-globe\'></i>'" alt="icon">
+                            </div>
+                            <div class="site-name">${item.site}</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-icon" onclick="deleteItem(${item.id})" title="Hapus">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="data-row">
+                        <div class="data-label">Username / Email</div>
+                        <div class="data-value-group">
+                            <div class="data-value">${item.username}</div>
+                            <button class="btn-copy" onclick="copyText('${item.username}')" title="Salin">
+                                <i class="ph ph-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="data-row">
+                        <div class="data-label">Password</div>
+                        <div class="data-value-group">
+                            <div class="data-value password-hidden" id="pass-${item.id}" data-pass="${item.password}">••••••••</div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-copy" onclick="togglePass(${item.id})" title="Lihat Password">
+                                    <i class="ph ph-eye" id="eye-${item.id}"></i>
+                                </button>
+                                <button class="btn-copy" onclick="copyText('${item.password}')" title="Salin Password">
+                                    <i class="ph ph-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- 2. AMBIL DATA DARI SERVER ---
+        async function loadDataFromServer() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Gagal terhubung ke server');
+                }
+
+                const data = await response.json();
+                allData = data;
+                renderVault(allData);
+            } catch (error) {
+                console.error("Error:", error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="ph ph-warning-circle" style="font-size:3rem; color:var(--danger)"></i>
+                        <p class="error-msg">Gagal terhubung ke Server!</p>
+                        <p>Pastikan 'node server.js' sedang berjalan di terminal.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // --- 3. TAMBAH DATA BARU ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const newItem = {
+                site: document.getElementById('siteName').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newItem)
+                });
+
+                if (response.ok) {
+                    loadDataFromServer(); // Reload data
+                    closeModal();
+                    form.reset();
+                    showToast("Akun berhasil disimpan!");
+                } else {
+                    alert("Gagal menyimpan data.");
+                }
+            } catch (error) {
+                alert("Terjadi kesalahan jaringan.");
+            }
+        });
+
+        // --- 4. HAPUS DATA ---
+        async function deleteItem(id) {
+            if(confirm("Yakin ingin menghapus data ini dari server?")) {
+                try {
+                    const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                    
+                    if (response.ok) {
+                        loadDataFromServer();
+                        showToast("Data dihapus dari server.");
+                    }
+                } catch (error) {
+                    alert("Gagal menghapus.");
+                }
+            }
+        }
+
+        // --- 5. PENCARIAN (SEARCH) ---
+        searchInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase();
+            const filtered = allData.filter(item => 
+                item.site.toLowerCase().includes(keyword) || 
+                item.username.toLowerCase().includes(keyword)
+            );
+            renderVault(filtered);
+        });
+
+        // --- 6. UTILITAS ---
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Disalin ke clipboard!");
+            });
+        }
+
+        function togglePass(id) {
+            const el = document.getElementById(`pass-${id}`);
+            const icon = document.getElementById(`eye-${id}`);
+            const realPass = el.getAttribute('data-pass');
+
+            if (el.classList.contains('password-hidden')) {
+                el.innerText = realPass;
+                el.classList.remove('password-hidden');
+                icon.classList.remove('ph-eye');
+                icon.classList.add('ph-eye-slash');
+            } else {
+                el.innerText = '••••••••';
+                el.classList.add('password-hidden');
+                icon.classList.remove('ph-eye-slash');
+                icon.classList.add('ph-eye');
+            }
+        }
+
+        function openModal() { modal.style.display = 'flex'; }
+        function closeModal() { modal.style.display = 'none'; }
+
+        window.onclick = function(event) {
+            if (event.target == modal) closeModal();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+        }
+
+        // --- 7. JALANKAN SAAT PERTAMA KALI DIBUKA ---
+        loadDataFromServer();
+
+    </script>
+</body>
+</html>
